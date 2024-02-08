@@ -19,10 +19,14 @@ public:
 
 	void pushBack(const AnyType& value);
 	void pushFront(const AnyType& value);
+	AnyType popBack();
+	AnyType popFront();
 
 	bool insert(const AnyType& value, int index);
 	bool remove(const AnyType& value);
 
+	void initialize();
+	void destroy();
 private:
 	Node<AnyType>* m_first;
 	Node<AnyType>* m_last;
@@ -33,9 +37,7 @@ private:
 template<typename AnyType>
 inline LinkedList<AnyType>::LinkedList()
 {
-	m_first = nullptr;
-	m_last = nullptr;
-	m_nodeCount = 0;
+	initialize();
 }
 
 template<typename AnyType>
@@ -111,6 +113,55 @@ inline void LinkedList<AnyType>::pushFront(const AnyType& value)
 }
 
 template<typename AnyType>
+inline AnyType LinkedList<AnyType>::popBack()
+{
+	//If the list is empty...
+	if (m_nodeCount == 0)
+		//...return default value.
+		return AnyType();
+
+	//Store the data in the node to remove.
+	AnyType value = m_last->data;
+
+	//Mark the second to last node as the last.
+	m_last = m_last->previous;
+
+	//If the last node has a next...
+	if (m_last->next)
+	{
+		//...delete it.
+		delete m_last->next;
+		m_last->next = nullptr;
+	}
+
+	m_nodeCount--;
+
+	//Give back the value in the old last node.
+	return value;
+}
+
+template<typename AnyType>
+inline AnyType LinkedList<AnyType>::popFront()
+{
+	if (m_nodeCount == 0)
+		return AnyType();
+
+	AnyType value = m_first->data;
+
+	m_first = m_first->next;
+
+	if (m_first->previous)
+	{
+		delete m_first->previous;
+		m_first->previous = nullptr;
+	}
+
+	m_nodeCount--;
+
+	return value;
+}
+
+template<typename AnyType>
 inline bool LinkedList<AnyType>::insert(const AnyType& value, int index)
 {
 	//Check if the index is within the bounds of the list.
@@ -170,10 +221,46 @@ inline bool LinkedList<AnyType>::remove(const AnyType& value)
 		iter = iter->next;
 	}
 
+
+	if (iter == m_last)
+	{
+		popBack();
+		return true;
+	}
+	else if (iter == m_first)
+	{
+		popFront();
+		return true;
+	}
+
 	iter->next->previous = iter->previous;
 	iter->previous->next = iter->next;
 
 	delete iter;
 
+	m_nodeCount--;
+
 	return true;
+}
+
+template<typename AnyType>
+inline void LinkedList<AnyType>::initialize()
+{
+	m_nodeCount = 0;
+	m_first = nullptr;
+	m_last = nullptr;
+}
+
+template<typename AnyType>
+inline void LinkedList<AnyType>::destroy()
+{
+	if (m_nodeCount == 0)
+		return;
+
+	for (int i = 0; i < m_nodeCount; i++)
+	{
+		popBack();
+	}
+
+	initialize();
 }

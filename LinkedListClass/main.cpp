@@ -11,6 +11,8 @@ int main()
 
 	list1.insert(4, 3);
 
+	list1.destroy();
+
 	list1.print();
 
 	return 0;
